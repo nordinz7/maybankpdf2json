@@ -1,3 +1,2 @@
-# This file marks the directory as a Python package.
-# You can add package-level imports or initialization code here if needed.
-from .extractor import MaybankPDFExtractor
+# filepath: maybankpdf2json/__init__.py
+from .extractor import MaybankPdf2Json

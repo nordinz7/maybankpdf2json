@@ -1,19 +1,13 @@
-# Maybank Account Statement Extractor
+# Maybank PDF Account Statement to JSON
 
-This package provides functionality to extract and process data from Maybank account statement PDFs. It allows users to read PDF files, filter relevant data, and map it into a structured format for further analysis or reporting.
-
-## Features
-
-- Extract data from PDF statements.
-- Filter and map extracted data into a structured format.
-- Utility functions for data manipulation and validation.
+This package provides functionality to extract and process data from Maybank account statement PDFs. It allows users to read PDF files and extract json data from them.
 
 ## Installation
 
 To install the package, clone the repository and run the following command:
 
 ```
-pip install .
+pip install maybankpdf2json
 ```
 
 ## Usage
@@ -21,19 +15,27 @@ pip install .
 Here is a basic example of how to use the package:
 
 ```python
-from maybank_acc_extractor.extractor import read_pdfs, get_filtered_data, get_mapped_data
+from maybankpdf2json import MaybankPdf2Json
 
-# Read PDF files from a specified directory
-pdf_data = read_pdfs('path/to/pdf/folder', 'your_password')
+# Initialize the MaybankPdf2Json object
+mbb = MaybankPdf2Json(buffer, "01Jan2025")
+data = mbb.json()
 
-# Filter the data
-filtered_data = get_filtered_data(pdf_data)
-
-# Map the filtered data to a structured format
-mapped_data = get_mapped_data(filtered_data)
-
-# Output the mapped data
 print(mapped_data)
+[
+  {
+    "date": "01/01/2024",
+    "desc": "Deposit from client",
+    "trans": 50.0,
+    "bal": 1050.0
+  },
+  {
+    "date": "02/01/2024",
+    "desc": "Purchase - Office Supplies",
+    "trans": -20.0,
+    "bal": 1030.0
+  }
+]
 ```
 
 ## Testing

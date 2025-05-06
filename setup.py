@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="maybankpdf2json",
-    version="0.1.0",
+    version="0.1.1",
     author="Nordin",
     author_email="vipnordin@gmail.com",
     description="A package for extracting JSON data from Maybank account statements(PDF format).",
@@ -12,11 +12,12 @@ setup(
     packages=find_packages(),
     install_requires=[
         "pdfplumber",
+        "numpy",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires=">=3.6",
 )

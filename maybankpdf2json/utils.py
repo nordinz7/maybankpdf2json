@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TypedDict
+from typing import TypedDict, List, Any
 import numpy as np
 import pdfplumber
 
@@ -112,8 +112,9 @@ def get_filtered_data(arr):
     return narr
 
 
-def read(s):
-    with pdfplumber.open(s.buffers, password=s.pwd) as pdf:
+def read(buf, pwd=None):
+    buf.seek(0)
+    with pdfplumber.open(buf, password=pwd) as pdf:
         return [
             txt
             for pg, page in enumerate(pdf.pages)
@@ -121,10 +122,7 @@ def read(s):
         ]
 
 
-def convert_to_json(s):
-    all_lines = []
-    for buf in s.buffers:
-        buf.seek(0)
-        all_lines.extend(read(buf))
+def convert_to_json(s) -> list[Output]:
+    all_lines = read(s.buffer, pwd=getattr(s, "pwd", None))
     d = get_filtered_data(all_lines)
     return get_mapped_data(d)

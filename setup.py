@@ -10,7 +10,10 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/nordinz7/maybankpdf2json",
     packages=find_packages(),
-    install_requires=open("requirements.txt").read().splitlines(),
+    install_requires=(
+        "pdfplumber>=0.7.4",
+        "numpy>=1.24.3",
+    ),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

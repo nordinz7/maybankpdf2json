@@ -122,6 +122,9 @@ def read(s):
 
 
 def convert_to_json(s):
-    r = read(s)
-    d = get_filtered_data(r)
+    all_lines = []
+    for buf in s.buffers:
+        buf.seek(0)
+        all_lines.extend(read(buf))
+    d = get_filtered_data(all_lines)
     return get_mapped_data(d)

@@ -1,14 +1,11 @@
-from typing import List, Union, BinaryIO
+import io
 from .utils import convert_to_json
 
 
 class MaybankPdf2Json:
-    def __init__(self, buffers: Union[List[BinaryIO], BinaryIO], pwd: str):
-        if isinstance(buffers, list):
-            self.buffers = buffers
-        else:
-            self.buffers = [buffers]
-        self.pwd = pwd
+    def __init__(self, buffer: io.BufferedReader, pwd: str):
+        self.buffer: io.BufferedReader = buffer
+        self.pwd: str = pwd
 
-    def json(self):
+    def json(self) -> list:
         return convert_to_json(self)

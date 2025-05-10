@@ -25,23 +25,23 @@ example_password = "12345"  # Replace with your actual PDF password
 with open(example_path, "rb") as f:
     extractor = MaybankPdf2Json(f, example_password)
     data = extractor.json()
+    print(data)
 
-print(data)
-# Output example:
-# [
-#   {
-#     "date": "01/01/2024",
-#     "desc": "Deposit from client",
-#     "trans": 50.0,
-#     "bal": 1050.0
-#   },
-#   {
-#     "date": "02/01/2024",
-#     "desc": "Purchase - Office Supplies",
-#     "trans": -20.0,
-#     "bal": 1030.0
-#   }
-# ]
+    # Output example:
+    # [
+    #   {
+    #     "date": "01/01/2024",
+    #     "desc": "Deposit from client",
+    #     "trans": 50.0,
+    #     "bal": 1050.0
+    #   },
+    #   {
+    #     "date": "02/01/2024",
+    #     "desc": "Purchase - Office Supplies",
+    #     "trans": -20.0,
+    #     "bal": 1030.0
+    #   }
+    # ]
 ```
 
 ## Testing

@@ -1,10 +1,8 @@
 from datetime import datetime
 import io
-from typing import TypedDict, List, Any, Optional, BinaryIO
+from typing import TypedDict, List, Optional, Any
 import numpy as np
 import pdfplumber
-
-from maybankpdf2json.extractor import MaybankPdf2Json
 
 START_ENTRY = "BEGINNING BALANCE"
 END_ENTRY = "TOTAL DEBIT"
@@ -166,7 +164,7 @@ def read(buf: io.BufferedReader, pwd: Optional[str] = None) -> List[str]:
         ]
 
 
-def convert_to_json(s: "MaybankPdf2Json") -> List[Output]:
+def convert_to_json(s: Any) -> List[Output]:
     """
     Converts a PDF statement to a list of transaction records in JSON format.
 

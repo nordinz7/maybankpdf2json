@@ -49,7 +49,7 @@ class TestExtractor(unittest.TestCase):
     def test_jsonV2_structure(self):
         self.assertIsInstance(self.dataV2, dict)
         self.assertIn("account_number", self.dataV2)
-        self.assertIn("date", self.dataV2)
+        self.assertIn("statement_date", self.dataV2)
         self.assertIn("transactions", self.dataV2)
         self.assertIsInstance(self.dataV2["transactions"], list)
         self.assertEqual(len(self.dataV2["transactions"]), 47)

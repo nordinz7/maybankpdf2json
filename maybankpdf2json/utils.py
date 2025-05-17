@@ -179,7 +179,11 @@ def convert_to_json(s: Any) -> List[Output]:
     return get_mapped_data(d)
 
 
-def extract_account_and_date(lines):
+def extract_account_and_date(lines) -> dict:
+    """
+    Extracts the account number and statement date from the provided lines.
+    Returns a dict with string or None values.
+    """
     account_number = None
     statement_date = None
 
@@ -192,10 +196,11 @@ def extract_account_and_date(lines):
         # Look for date pattern (e.g., 30/09/24)
         date_match = re.search(r"\b\d{2}/\d{2}/\d{2}\b", line)
         if date_match:
-            # Parse it into a proper date object if needed
             raw_date = date_match.group()
             try:
-                statement_date = datetime.strptime(raw_date, "%d/%m/%y").date()
+                # Always return as string in 'dd/mm/yy' format
+                dt = datetime.strptime(raw_date, "%d/%m/%y")
+                statement_date = dt.strftime("%d/%m/%y")
             except ValueError:
                 pass
 
@@ -219,5 +224,8 @@ def convert_to_jsonV2(s: Any) -> dict:
     d = get_filtered_data(all_lines)
     t = get_mapped_data(d)
     o = extract_account_and_date(all_lines)
-    o["transactions"] = t
-    return o
+    return {
+        "account_number": o["account_number"],
+        "statement_date": o["statement_date"],
+        "transactions": t,
+    }

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="maybankpdf2json",
-    version="0.1.51",
+    version="0.1.52",
     author="Nordin",
     author_email="vipnordin@gmail.com",
     description="A package for extracting JSON data from Maybank PDF account statements",

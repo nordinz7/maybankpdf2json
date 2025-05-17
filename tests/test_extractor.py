@@ -10,6 +10,7 @@ class TestExtractor(unittest.TestCase):
         with open(self.test_pdf_path, "rb") as f:
             self.extractor = MaybankPdf2Json(f, self.test_password)
             self.data = self.extractor.json()
+            self.dataV2 = self.extractor.jsonV2()
 
     def test_output_is_list(self):
         self.assertIsInstance(self.data, list)
@@ -44,6 +45,25 @@ class TestExtractor(unittest.TestCase):
         self.assertEqual(t["bal"], 2395.67)
         self.assertEqual(t["trans"], -222.1)
         self.assertEqual(t["date"], "15/09/24")
+
+    def test_jsonV2_structure(self):
+        self.assertIsInstance(self.dataV2, dict)
+        self.assertIn("account_number", self.dataV2)
+        self.assertIn("date", self.dataV2)
+        self.assertIn("transactions", self.dataV2)
+        self.assertIsInstance(self.dataV2["transactions"], list)
+        self.assertEqual(len(self.dataV2["transactions"]), 47)
+
+    def test_jsonV2_account_number(self):
+        self.assertEqual(self.dataV2["account_number"], "162021-851156")
+
+    def test_jsonV2_statement_date(self):
+        self.assertEqual(self.dataV2["statement_date"], "30/09/24")
+
+    def test_jsonV2_first_transaction(self):
+        first = self.dataV2["transactions"][0]
+        self.assertEqual(first["desc"], "BEGINNING BALANCE")
+        self.assertEqual(first["bal"], 3285.77)
 
 
 if __name__ == "__main__":

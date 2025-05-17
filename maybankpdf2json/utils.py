@@ -3,6 +3,7 @@ import io
 from typing import TypedDict, List, Optional, Any
 import numpy as np
 import pdfplumber
+import re
 
 START_ENTRY = "BEGINNING BALANCE"
 END_ENTRY = "TOTAL DEBIT"
@@ -176,3 +177,47 @@ def convert_to_json(s: Any) -> List[Output]:
     all_lines = read(s.buffer, pwd=getattr(s, "pwd", None))
     d = get_filtered_data(all_lines)
     return get_mapped_data(d)
+
+
+def extract_account_and_date(lines):
+    account_number = None
+    statement_date = None
+
+    for line in lines:
+        # Look for account number pattern (e.g., 162021-851156)
+        account_match = re.search(r"\b\d{6}-\d{6}\b", line)
+        if account_match:
+            account_number = account_match.group()
+
+        # Look for date pattern (e.g., 30/09/24)
+        date_match = re.search(r"\b\d{2}/\d{2}/\d{2}\b", line)
+        if date_match:
+            # Parse it into a proper date object if needed
+            raw_date = date_match.group()
+            try:
+                statement_date = datetime.strptime(raw_date, "%d/%m/%y").date()
+            except ValueError:
+                pass
+
+    return {"account_number": account_number, "statement_date": statement_date}
+
+
+def convert_to_jsonV2(s: Any) -> dict:
+    """
+    Converts a PDF statement
+
+    Args:
+        s (MaybankPdf2Json): An object with a 'buffer' attribute and optional 'pwd' attribute.
+    Returns:
+        {
+            "account_number": str,
+            "statement_date": str,
+            "transactions": List[Output]
+        }
+    """
+    all_lines = read(s.buffer, pwd=getattr(s, "pwd", None))
+    d = get_filtered_data(all_lines)
+    t = get_mapped_data(d)
+    o = extract_account_and_date(all_lines)
+    o["transactions"] = t
+    return o

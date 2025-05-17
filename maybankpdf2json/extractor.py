@@ -1,6 +1,6 @@
 import io
 from typing import List
-from .utils import Output, convert_to_json
+from .utils import Output, convert_to_json, convert_to_jsonV2
 
 
 class MaybankPdf2Json:
@@ -31,3 +31,12 @@ class MaybankPdf2Json:
             List[Dict[str, Any]]: List of transaction records with keys 'date', 'desc', 'bal', and 'trans'.
         """
         return convert_to_json(self)
+
+    def jsonV2(self) -> dict:
+        """
+        Extracts and returns the transaction data as a dictionary.
+
+        Returns:
+            dict: Dictionary containing the account number, date, and transaction records.
+        """
+        return convert_to_jsonV2(self)

@@ -1,9 +1,9 @@
-from datetime import datetime
 import io
-from typing import TypedDict, List, Optional, Any
-import numpy as np
-import pdfplumber
 import re
+from datetime import datetime
+from typing import Any, List, Optional, TypedDict
+
+import pdfplumber
 
 START_ENTRY = "BEGINNING BALANCE"
 END_ENTRY = "TOTAL DEBIT"
@@ -12,6 +12,9 @@ NOTE_END_ENTRY = (
     "ENTRY DATE TRANSACTION DESCRIPTION TRANSACTION AMOUNT STATEMENT BALANCE"
 )
 EXCLUDE_ITEMS = ["TOTAL CREDIT", "TOTAL DEBIT", "ENDING BALANCE"]
+DATE_FORMAT = "%d/%m/%y"
+ACCOUNT_NUMBER_PATTERN = re.compile(r"\b\d{6}-\d{6}\b")
+STATEMENT_DATE_PATTERN = re.compile(r"\b\d{2}/\d{2}/\d{2}\b")
 
 
 class Output(TypedDict):
@@ -34,10 +37,9 @@ def parse_acc_value(value: str) -> float:
     value = value.replace(",", "")
     if value.endswith("-"):
         return -float(value[:-1])
-    elif value.endswith("+"):
+    if value.endswith("+"):
         return float(value[:-1])
-    else:
-        return float(value)
+    return float(value)
 
 
 def is_valid_date(date_str: str) -> bool:
@@ -50,7 +52,7 @@ def is_valid_date(date_str: str) -> bool:
         bool: True if valid, False otherwise.
     """
     try:
-        datetime.strptime(date_str, "%d/%m/%y")
+        datetime.strptime(date_str, DATE_FORMAT)
         return True
     except ValueError:
         return False
@@ -65,34 +67,64 @@ def get_mapped_data(arr: List[str]) -> List[Output]:
     Returns:
         List[Output]: List of structured transaction records.
     """
+    if not arr:
+        return []
+
     narr: List[Output] = []
     i = 0
     while i < len(arr):
-        current = arr[i]
+        current = arr[i].strip()
         splitted = current.split()
-        obj: Output = {"desc": "", "bal": 0, "trans": 0, "date": ""}
-        if i != 0 and (not (is_valid_date(splitted[0]))):
+        if not splitted:
             i += 1
             continue
-        elif i == 0:
-            obj["desc"] = " ".join(splitted[0:2])
-            obj["bal"] = parse_acc_value(splitted[2])
-            narr.append(obj)
-        elif is_valid_date(splitted[0]):
+
+        obj: Output = {"desc": "", "bal": 0, "trans": 0, "date": ""}
+
+        # First row is opening balance metadata in Maybank statements.
+        if i == 0:
+            if len(splitted) >= 3:
+                obj["desc"] = " ".join(splitted[0:2])
+                obj["bal"] = parse_acc_value(splitted[2])
+                narr.append(obj)
+            i += 1
+            continue
+
+        if not is_valid_date(splitted[0]) or len(splitted) < 3:
+            i += 1
+            continue
+
+        if is_valid_date(splitted[0]):
             obj["date"] = splitted[0]
             obj["trans"] = parse_acc_value(splitted[-2])
             obj["bal"] = parse_acc_value(splitted[-1])
             obj["desc"] = " ".join(splitted[1:-2])
             i += 1
-            while i < len(arr) and not is_valid_date(arr[i].split()[0]):
-                obj["desc"] = obj["desc"] + " " + " ".join(arr[i].split())
+
+            while i < len(arr):
+                next_tokens = arr[i].split()
+                if next_tokens and is_valid_date(next_tokens[0]):
+                    break
+
+                continuation = " ".join(next_tokens).strip()
+                if continuation:
+                    obj["desc"] = (obj["desc"] + " " + continuation).strip()
                 i += 1
+
             narr.append(obj)
             continue
+
         i += 1
-    narr[0]["date"] = datetime.strptime(narr[2]["date"], "%d/%m/%y").strftime(
-        "01/%m/%y"
-    )
+
+    if narr and not narr[0]["date"]:
+        first_transaction_date = next(
+            (row["date"] for row in narr[1:] if row["date"]), ""
+        )
+        if first_transaction_date:
+            narr[0]["date"] = datetime.strptime(
+                first_transaction_date, DATE_FORMAT
+            ).strftime("01/%m/%y")
+
     return narr
 
 
@@ -106,11 +138,15 @@ def expand_ranges(arr: List[int]) -> List[int]:
         List[int]: Expanded list of indices.
     """
     expanded: List[int] = []
-    for ar in range(0, len(arr), 2):
+    for ar in range(0, len(arr) - 1, 2):
         f = arr[ar]
         s = arr[ar + 1]
         for i in range(f, s + 1):
             expanded.append(i)
+
+    if len(arr) % 2 == 1:
+        expanded.append(arr[-1])
+
     return expanded
 
 
@@ -131,18 +167,26 @@ def get_filtered_data(arr: List[str]) -> List[str]:
             indexes[1] = i + 1
             break
     filtered = arr[indexes[0] : indexes[1]]
-    temp = np.array(filtered)
-    notes_indices = np.where(
-        np.char.startswith(temp, NOTE_START_ENTRY)
-        | np.char.startswith(temp, NOTE_END_ENTRY)
-    )[0].tolist()
-    expanded = expand_ranges(notes_indices)
     narr: List[str] = []
-    for i, v in enumerate(temp):
-        if i not in expanded and (
-            not any(v.startswith(item) for item in EXCLUDE_ITEMS)
-        ):
-            narr.append(v)
+    in_notes = False
+
+    for value in filtered:
+        if value.startswith(NOTE_START_ENTRY):
+            in_notes = True
+            continue
+
+        if value.startswith(NOTE_END_ENTRY):
+            in_notes = False
+            continue
+
+        if in_notes:
+            continue
+
+        if any(value.startswith(item) for item in EXCLUDE_ITEMS):
+            continue
+
+        narr.append(value)
+
     return narr
 
 
@@ -158,11 +202,11 @@ def read(buf: io.BufferedReader, pwd: Optional[str] = None) -> List[str]:
     """
     buf.seek(0)
     with pdfplumber.open(buf, password=pwd) as pdf:
-        return [
-            txt
-            for pg, page in enumerate(pdf.pages)
-            for txt in page.extract_text().split("\n")
-        ]
+        lines: List[str] = []
+        for page in pdf.pages:
+            page_text = page.extract_text() or ""
+            lines.extend(page_text.splitlines())
+        return lines
 
 
 def convert_to_json(s: Any) -> List[Output]:
@@ -179,7 +223,13 @@ def convert_to_json(s: Any) -> List[Output]:
     return get_mapped_data(d)
 
 
-def extract_account_and_date(lines) -> dict:
+class OutputV2(TypedDict):
+    account_number: Optional[str]
+    statement_date: Optional[str]
+    transactions: List[Output]
+
+
+def extract_account_and_date(lines: List[str]) -> dict:
     """
     Extracts the account number and statement date from the provided lines.
     Returns a dict with string or None values.
@@ -189,25 +239,25 @@ def extract_account_and_date(lines) -> dict:
 
     for line in lines:
         # Look for account number pattern (e.g., 162021-851156)
-        account_match = re.search(r"\b\d{6}-\d{6}\b", line)
+        account_match = ACCOUNT_NUMBER_PATTERN.search(line)
         if account_match:
             account_number = account_match.group()
 
         # Look for date pattern (e.g., 30/09/24)
-        date_match = re.search(r"\b\d{2}/\d{2}/\d{2}\b", line)
+        date_match = STATEMENT_DATE_PATTERN.search(line)
         if date_match:
             raw_date = date_match.group()
             try:
                 # Always return as string in 'dd/mm/yy' format
-                dt = datetime.strptime(raw_date, "%d/%m/%y")
-                statement_date = dt.strftime("%d/%m/%y")
+                dt = datetime.strptime(raw_date, DATE_FORMAT)
+                statement_date = dt.strftime(DATE_FORMAT)
             except ValueError:
                 pass
 
     return {"account_number": account_number, "statement_date": statement_date}
 
 
-def convert_to_jsonV2(s: Any) -> dict:
+def convert_to_jsonV2(s: Any) -> OutputV2:
     """
     Converts a PDF statement
 
@@ -222,10 +272,10 @@ def convert_to_jsonV2(s: Any) -> dict:
     """
     all_lines = read(s.buffer, pwd=getattr(s, "pwd", None))
     d = get_filtered_data(all_lines)
-    t = get_mapped_data(d)
-    o = extract_account_and_date(all_lines)
+    transactions = get_mapped_data(d)
+    output = extract_account_and_date(all_lines)
     return {
-        "account_number": o["account_number"],
-        "statement_date": o["statement_date"],
-        "transactions": t,
+        "account_number": output["account_number"],
+        "statement_date": output["statement_date"],
+        "transactions": transactions,
     }

@@ -1,6 +1,7 @@
 import io
-from typing import List
-from .utils import Output, convert_to_json, convert_to_jsonV2
+from typing import List, Optional
+
+from .utils import Output, OutputV2, convert_to_json, convert_to_jsonV2
 
 
 class MaybankPdf2Json:
@@ -12,16 +13,16 @@ class MaybankPdf2Json:
         pwd (str): The password for the PDF file.
     """
 
-    def __init__(self, buffer: io.BufferedReader, pwd: str) -> None:
+    def __init__(self, buffer: io.BufferedReader, pwd: Optional[str] = None) -> None:
         """
         Initializes the MaybankPdf2Json extractor.
 
         Args:
             buffer (io.BufferedReader): The PDF file buffer.
-            pwd (str): The password for the PDF file.
+            pwd (Optional[str]): The password for the PDF file.
         """
         self.buffer: io.BufferedReader = buffer
-        self.pwd: str = pwd
+        self.pwd: Optional[str] = pwd
 
     def json(self) -> List[Output]:
         """
@@ -32,11 +33,11 @@ class MaybankPdf2Json:
         """
         return convert_to_json(self)
 
-    def jsonV2(self) -> dict:
+    def jsonV2(self) -> OutputV2:
         """
         Extracts and returns the transaction data as a dictionary.
 
         Returns:
-            dict: Dictionary containing the account number, date, and transaction records.
+            OutputV2: Dictionary containing account metadata and transaction records.
         """
         return convert_to_jsonV2(self)

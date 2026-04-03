@@ -74,11 +74,17 @@ class TestExtractor(unittest.TestCase):
         self.assertEqual(self.extractor.data_v2(), self.dataV2)
 
     def test_dumps_returns_pretty_json(self):
-        payload = json.loads(self.extractor.dumps())
+        rendered = self.extractor.dumps()
+        payload = json.loads(rendered)
+        self.assertIn("\n", rendered)
+        self.assertIn('  "date"', rendered)
         self.assertEqual(payload, self.data)
 
     def test_dumps_v2_returns_pretty_json(self):
-        payload = json.loads(self.extractor.dumps_v2())
+        rendered = self.extractor.dumps_v2()
+        payload = json.loads(rendered)
+        self.assertIn("\n", rendered)
+        self.assertIn('  "account_number"', rendered)
         self.assertEqual(payload, self.dataV2)
 
 

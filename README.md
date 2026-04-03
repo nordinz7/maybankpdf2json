@@ -1,5 +1,10 @@
 # maybankpdf2json
 
+[![PyPI version](https://img.shields.io/pypi/v/maybankpdf2json.svg)](https://pypi.org/project/maybankpdf2json/)
+[![Python versions](https://img.shields.io/pypi/pyversions/maybankpdf2json.svg)](https://pypi.org/project/maybankpdf2json/)
+[![CI](https://github.com/nordinz7/maybankpdf2json/actions/workflows/publish.yml/badge.svg)](https://github.com/nordinz7/maybankpdf2json/actions/workflows/publish.yml)
+[![License](https://img.shields.io/pypi/l/maybankpdf2json.svg)](https://github.com/nordinz7/maybankpdf2json/blob/main/LICENSE)
+
 A small Python library to extract transaction data from Maybank PDF account statements.
 
 ## Install

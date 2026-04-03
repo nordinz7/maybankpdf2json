@@ -1,5 +1,6 @@
 import unittest
 from maybankpdf2json.extractor import MaybankPdf2Json
+from maybankpdf2json.utils import get_filtered_data, get_mapped_data
 import os
 
 
@@ -64,6 +65,53 @@ class TestExtractor(unittest.TestCase):
         first = self.dataV2["transactions"][0]
         self.assertEqual(first["desc"], "BEGINNING BALANCE")
         self.assertEqual(first["bal"], 3285.77)
+
+
+class TestParserEdgeCases(unittest.TestCase):
+    def test_get_mapped_data_handles_malformed_and_continuation_lines(self):
+        raw_lines = [
+            "BEGINNING BALANCE 1,000.00+",
+            "",
+            "MALFORMED HEADER LINE",
+            "01/09/24 PAYMENT TO MERCHANT 10.00- 990.00+",
+            "additional description line",
+            "02/09/24 ATM WITHDRAWAL 5.00- 985.00+",
+        ]
+
+        result = get_mapped_data(raw_lines)
+
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0]["desc"], "BEGINNING BALANCE")
+        self.assertEqual(result[0]["bal"], 1000.0)
+        self.assertEqual(result[0]["date"], "01/09/24")
+
+        self.assertEqual(
+            result[1]["desc"], "PAYMENT TO MERCHANT additional description line"
+        )
+        self.assertEqual(result[1]["trans"], -10.0)
+        self.assertEqual(result[1]["bal"], 990.0)
+
+    def test_get_filtered_data_excludes_notes_and_totals(self):
+        lines = [
+            "Statement Header",
+            "BEGINNING BALANCE 1,000.00+",
+            "Perhation / Note",
+            "This note block should be removed",
+            "ENTRY DATE TRANSACTION DESCRIPTION TRANSACTION AMOUNT STATEMENT BALANCE",
+            "01/09/24 PAYMENT TO MERCHANT 10.00- 990.00+",
+            "TOTAL CREDIT 0.00",
+            "TOTAL DEBIT 10.00",
+            "Footer",
+        ]
+
+        filtered = get_filtered_data(lines)
+
+        self.assertIn("BEGINNING BALANCE 1,000.00+", filtered)
+        self.assertIn("01/09/24 PAYMENT TO MERCHANT 10.00- 990.00+", filtered)
+        self.assertNotIn("Perhation / Note", filtered)
+        self.assertNotIn("This note block should be removed", filtered)
+        self.assertNotIn("TOTAL CREDIT 0.00", filtered)
+        self.assertNotIn("TOTAL DEBIT 10.00", filtered)
 
 
 if __name__ == "__main__":

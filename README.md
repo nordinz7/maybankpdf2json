@@ -4,6 +4,8 @@ A small Python library to extract transaction data from Maybank PDF account stat
 
 ## Install
 
+Requires Python 3.8 or newer.
+
 ```bash
 pip install maybankpdf2json
 ```

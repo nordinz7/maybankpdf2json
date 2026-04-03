@@ -1,7 +1,7 @@
 # Variables
 PYTHON = python3
 PIP = pip
-TEST_CMD = $(PYTHON) -m unittest discover -s tests
+TEST_CMD = $(PYTHON) -m unittest discover -s tests -v
 
 .PHONY: test release install clean help
 
@@ -27,7 +27,7 @@ release: install clean
 
 help:
 	@echo "Available targets:"
-	@echo "  test     - Run unit tests"
+	@echo "  test     - Run unit tests with verbose output"
 	@echo "  install  - Install dependencies from requirements.txt"
 	@echo "  clean    - Remove build and Python cache artifacts"
 	@echo "  release  - Build, test, and upload the package to PyPI"

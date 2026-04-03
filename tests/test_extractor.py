@@ -1,4 +1,5 @@
 import unittest
+import json
 from maybankpdf2json.extractor import MaybankPdf2Json
 from maybankpdf2json.utils import get_filtered_data, get_mapped_data
 import os
@@ -66,6 +67,20 @@ class TestExtractor(unittest.TestCase):
         self.assertEqual(first["desc"], "BEGINNING BALANCE")
         self.assertEqual(first["bal"], 3285.77)
 
+    def test_data_alias_matches_json(self):
+        self.assertEqual(self.extractor.data(), self.data)
+
+    def test_data_v2_alias_matches_jsonV2(self):
+        self.assertEqual(self.extractor.data_v2(), self.dataV2)
+
+    def test_dumps_returns_pretty_json(self):
+        payload = json.loads(self.extractor.dumps())
+        self.assertEqual(payload, self.data)
+
+    def test_dumps_v2_returns_pretty_json(self):
+        payload = json.loads(self.extractor.dumps_v2())
+        self.assertEqual(payload, self.dataV2)
+
 
 class TestParserEdgeCases(unittest.TestCase):
     def test_get_mapped_data_handles_malformed_and_continuation_lines(self):
@@ -115,4 +130,4 @@ class TestParserEdgeCases(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(verbosity=2)

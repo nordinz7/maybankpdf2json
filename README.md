@@ -118,6 +118,31 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development workflow and [docs/ARCHIT
 
 ## Release
 
+Automatic PyPI publishing is configured with GitHub Actions in `.github/workflows/publish.yml`.
+
+One-time setup on PyPI:
+
+1. Open the project on PyPI.
+2. Add a Trusted Publisher for this GitHub repository.
+3. Use workflow name `publish.yml`.
+4. Use environment name `pypi`.
+
+Release flow:
+
+1. Update the version in `pyproject.toml` and `setup.py`.
+2. Commit and push `main`.
+3. Create and push a version tag such as `v0.1.53`.
+4. GitHub Actions builds the package and publishes it to PyPI automatically.
+
+Example:
+
+```bash
+git tag v0.1.53
+git push origin v0.1.53
+```
+
+Local manual release remains available for maintainers:
+
 ```bash
 make release
 ```

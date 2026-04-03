@@ -1,74 +1,77 @@
-# Maybank PDF Account Statement to JSON
+# maybankpdf2json
 
-This package provides functionality to extract and process data from Maybank account statement PDFs. It allows users to read PDF files and extract json data from them.
+A small Python library to extract transaction data from Maybank PDF account statements.
 
-## Installation
+## Install
 
-To install the package, clone the repository and run the following command:
-
-```
+```bash
 pip install maybankpdf2json
 ```
 
-## Usage
-
-Here is a simple example of how to use the package to extract data from a Maybank PDF statement:
+## Quick Start
 
 ```python
-import os
 from maybankpdf2json import MaybankPdf2Json
 
-# Path to your PDF file and its password
-example_path = os.path.join(os.path.dirname(__file__), "test.pdf")
-example_password = "12345"  # Replace with your actual PDF password
+with open("statement.pdf", "rb") as f:
+    extractor = MaybankPdf2Json(f, "your_pdf_password")
 
-with open(example_path, "rb") as f:
-    extractor = MaybankPdf2Json(f, example_password)
-    data = extractor.json()
-    print(data)
+    transactions = extractor.json()
+    print(transactions[0])
 
-    # Output example:
-    # [
-    #   {
-    #     "date": "01/01/2024",
-    #     "desc": "Deposit from client",
-    #     "trans": 50.0,
-    #     "bal": 1050.0
-    #   },
-    #   {
-    #     "date": "02/01/2024",
-    #     "desc": "Purchase - Office Supplies",
-    #     "trans": -20.0,
-    #     "bal": 1030.0
-    #   }
-    # ]
+    full_output = extractor.jsonV2()
+    print(full_output["account_number"], full_output["statement_date"])
 ```
 
-## Testing
+## API
 
-To run the tests, navigate to the project directory and execute:
+### `MaybankPdf2Json(buffer, pwd)`
 
+- `json()` -> `List[Output]`
+  - Returns transaction rows with fields: `date`, `desc`, `trans`, `bal`.
+- `jsonV2()` -> `dict`
+  - Returns:
+    - `account_number`: statement account number when available
+    - `statement_date`: statement date in `dd/mm/yy`
+    - `transactions`: same list as `json()`
+
+## Output Notes
+
+- Dates use `dd/mm/yy`.
+- Amounts support trailing sign notation from statements:
+  - `123.45-` -> `-123.45`
+  - `123.45+` -> `123.45`
+
+## Development
+
+Install project dependencies:
+
+```bash
+make install
 ```
+
+Run tests:
+
+```bash
+make test
+```
+
+Alternative test command:
+
+```bash
 pytest tests/
 ```
 
-## Makefile Usage
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development workflow and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for parser internals.
 
-This project includes a `Makefile` with helpful commands:
+## Release
 
-- To run tests:
-  ```sh
-  make test
-  ```
-- To build and release the package (requires proper credentials):
-  ```sh
-  make release
-  ```
+```bash
+make release
+```
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a pull request or open an issue for any enhancements or bug fixes.
+This builds and uploads to PyPI using Twine. Run only with valid release credentials.
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for more details.
+MIT. See `LICENSE`.

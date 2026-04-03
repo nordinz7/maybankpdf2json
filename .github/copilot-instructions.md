@@ -24,6 +24,7 @@
 - Alternate test command documented in `README.md`: `pytest tests/`.
 - Package build metadata lives in `pyproject.toml` and `setup.py`; keep both consistent when editing packaging fields.
 - `make release` uploads to PyPI via Twine. Do not run release/upload commands unless explicitly requested.
+- Keep contributor and architecture details in `CONTRIBUTING.md` and `docs/ARCHITECTURE.md`; link instead of duplicating large sections.
 
 ## Conventions
 

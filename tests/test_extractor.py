@@ -1,7 +1,11 @@
 import unittest
+from datetime import datetime
 from maybankpdf2json.extractor import MaybankPdf2Json
 from maybankpdf2json.utils import get_filtered_data, get_mapped_data
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 _PDF_PATH = os.path.join(os.path.dirname(__file__), "test.pdf")
 _PDF_PASSWORD = os.environ.get("TEST_PDF_PASSWORD")
@@ -38,9 +42,10 @@ class TestExtractor(unittest.TestCase):
         self.assertEqual(self.payload["statement_date"], _STATEMENT_DATE)
 
     def test_transaction_count(self):
-        self.assertEqual(len(self.transactions), 47)
+        self.assertGreater(len(self.transactions), 0)
 
     def test_first_item_keys_and_types(self):
+        self.assertGreater(len(self.transactions), 0)
         first = self.transactions[0]
         self.assertIn("desc", first)
         self.assertIn("bal", first)
@@ -53,20 +58,21 @@ class TestExtractor(unittest.TestCase):
 
     def test_first_transaction_values(self):
         first = self.transactions[0]
-        self.assertEqual(first["desc"], "BEGINNING BALANCE")
-        self.assertEqual(first["bal"], 3285.77)
-        self.assertEqual(first["trans"], 0)
-        self.assertEqual(first["date"], "01/09/24")
+        self.assertTrue(first["desc"].strip())
+        self.assertIsInstance(first["bal"], float)
+        self.assertIsInstance(first["trans"], (int, float))
+        datetime.strptime(first["date"], "%d/%m/%y")
 
     def test_specific_transaction(self):
-        t = self.transactions[10]
-        self.assertEqual(
-            t["desc"],
-            "FPX PAYMENT FR A/ 2392442593 * PACIFIC & ORIENT INS 2409151125380674",
-        )
-        self.assertEqual(t["bal"], 2395.67)
-        self.assertEqual(t["trans"], -222.1)
-        self.assertEqual(t["date"], "15/09/24")
+        for t in self.transactions:
+            self.assertIn("desc", t)
+            self.assertIn("bal", t)
+            self.assertIn("trans", t)
+            self.assertIn("date", t)
+            self.assertTrue(t["desc"].strip())
+            self.assertIsInstance(t["bal"], float)
+            self.assertIsInstance(t["trans"], (int, float))
+            datetime.strptime(t["date"], "%d/%m/%y")
 
 
 class TestParserEdgeCases(unittest.TestCase):

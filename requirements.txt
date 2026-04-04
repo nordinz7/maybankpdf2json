@@ -1,1 +1,2 @@
 pdfplumber>=0.7.4
+python-dotenv>=1.0.0

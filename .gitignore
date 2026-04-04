@@ -127,6 +127,9 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
+# Test fixtures (personal bank statement - never commit)
+tests/test.pdf
+
 # Environments
 .env
 .venv

@@ -3,13 +3,22 @@ from maybankpdf2json.extractor import MaybankPdf2Json
 from maybankpdf2json.utils import get_filtered_data, get_mapped_data
 import os
 
+_PDF_PATH = os.path.join(os.path.dirname(__file__), "test.pdf")
+_PDF_PASSWORD = os.environ.get("TEST_PDF_PASSWORD")
+_ACCOUNT_NUMBER = os.environ.get("TEST_ACCOUNT_NUMBER")
+_STATEMENT_DATE = os.environ.get("TEST_STATEMENT_DATE")
 
+_PDF_AVAILABLE = os.path.exists(_PDF_PATH) and bool(_PDF_PASSWORD)
+
+
+@unittest.skipUnless(
+    _PDF_AVAILABLE,
+    "Provide tests/test.pdf and set TEST_PDF_PASSWORD to run integration tests",
+)
 class TestExtractor(unittest.TestCase):
     def setUp(self):
-        self.test_pdf_path = os.path.join(os.path.dirname(__file__), "test.pdf")
-        self.test_password = "04Nov1997"  # Update with actual test password
-        with open(self.test_pdf_path, "rb") as f:
-            self.extractor = MaybankPdf2Json(f, self.test_password)
+        with open(_PDF_PATH, "rb") as f:
+            self.extractor = MaybankPdf2Json(f, _PDF_PASSWORD)
             self.payload = self.extractor.json()
             self.transactions = self.payload["transactions"]
 
@@ -20,9 +29,13 @@ class TestExtractor(unittest.TestCase):
         self.assertIn("transactions", self.payload)
         self.assertIsInstance(self.payload["transactions"], list)
 
+    @unittest.skipUnless(
+        _ACCOUNT_NUMBER and _STATEMENT_DATE,
+        "Set TEST_ACCOUNT_NUMBER and TEST_STATEMENT_DATE to run",
+    )
     def test_account_metadata(self):
-        self.assertEqual(self.payload["account_number"], "162021-851156")
-        self.assertEqual(self.payload["statement_date"], "30/09/24")
+        self.assertEqual(self.payload["account_number"], _ACCOUNT_NUMBER)
+        self.assertEqual(self.payload["statement_date"], _STATEMENT_DATE)
 
     def test_transaction_count(self):
         self.assertEqual(len(self.transactions), 47)

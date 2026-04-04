@@ -42,4 +42,5 @@ pytest tests/
 
 - Describe what changed and why.
 - Include test results.
+- Add user-facing changes to `CHANGELOG.md` under `[Unreleased]`.
 - Avoid unrelated refactors in the same PR.

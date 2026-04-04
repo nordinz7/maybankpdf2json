@@ -124,6 +124,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development workflow and [docs/ARCHIT
 
 ## Release
 
+See [CHANGELOG.md](CHANGELOG.md) for release history.
+
 Automatic PyPI publishing is configured with GitHub Actions in `.github/workflows/publish.yml`.
 
 One-time setup on PyPI:
@@ -135,10 +137,11 @@ One-time setup on PyPI:
 
 Release flow:
 
-1. Update the version in `pyproject.toml` and `setup.py`.
-2. Commit and push `main`.
-3. Create and push a version tag such as `v0.1.53`.
-4. GitHub Actions builds the package and publishes it to PyPI automatically.
+1. Move items from `[Unreleased]` in `CHANGELOG.md` into a new version section.
+2. Update the version in `pyproject.toml` and `setup.py`.
+3. Commit and push `main`.
+4. Create and push a version tag such as `v0.1.53`.
+5. GitHub Actions builds the package and publishes it to PyPI automatically.
 
 Example:
 

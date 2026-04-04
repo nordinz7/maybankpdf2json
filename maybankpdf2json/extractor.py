@@ -1,8 +1,7 @@
 import io
-import json
-from typing import List, Optional
+from typing import Optional
 
-from .utils import Output, OutputV2, convert_to_json, convert_to_jsonV2
+from .utils import OutputV2, convert_to_jsonV2
 
 
 class MaybankPdf2Json:
@@ -28,36 +27,11 @@ class MaybankPdf2Json:
         buffer.seek(original_position)
         self.pwd: Optional[str] = pwd
 
-    def json(self) -> List[Output]:
+    def json(self) -> OutputV2:
         """
-        Extracts and returns the transaction data as a list of dictionaries.
+        Extracts and returns account metadata and transaction rows.
 
         Returns:
-            List[Dict[str, Any]]: List of transaction records with keys 'date', 'desc', 'bal', and 'trans'.
-        """
-        return convert_to_json(self)
-
-    def data(self) -> List[Output]:
-        """Return transaction rows using a clearer method name."""
-        return self.json()
-
-    def jsonV2(self) -> OutputV2:
-        """
-        Extracts and returns the transaction data as a dictionary.
-
-        Returns:
-            OutputV2: Dictionary containing account metadata and transaction records.
+            OutputV2: Dictionary containing account metadata and transactions.
         """
         return convert_to_jsonV2(self)
-
-    def data_v2(self) -> OutputV2:
-        """Return account metadata plus transactions using a clearer method name."""
-        return self.jsonV2()
-
-    def dumps(self, indent: int = 2) -> str:
-        """Serialize transaction rows as formatted JSON text."""
-        return json.dumps(self.json(), indent=indent, ensure_ascii=False)
-
-    def dumps_v2(self, indent: int = 2) -> str:
-        """Serialize account metadata plus transactions as formatted JSON text."""
-        return json.dumps(self.jsonV2(), indent=indent, ensure_ascii=False)

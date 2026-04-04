@@ -8,10 +8,30 @@ for release version numbers.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-04
+
+### Changed
+
+- Simplified the public extractor API to a single method: `MaybankPdf2Json.json()`.
+- `json()` now returns one payload with statement metadata and transactions:
+  - `account_number`
+  - `statement_date`
+  - `transactions`
+
+### Removed
+
+- Removed overlapping methods that caused API confusion:
+  - `data()`
+  - `jsonV2()`
+  - `data_v2()`
+- Removed built-in JSON rendering helpers:
+  - `dumps()`
+  - `dumps_v2()`
+
 ### Documentation
 
-- Restructured README with table of contents, feature summary, architecture
-  pipeline diagram, project structure, and updated contribution guidance.
+- Simplified README examples and API section to focus on the single output shape.
+- Clarified that JSON formatting/pretty printing should be handled by user projects.
 
 ## [0.1.53] - 2026-04-04
 

@@ -8,6 +8,46 @@
 
 A small Python library to extract transaction data from Maybank PDF account statements.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Install](#install)
+- [Quick Start](#quick-start)
+- [API](#api)
+- [Output Notes](#output-notes)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Development](#development)
+- [Release](#release)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Overview
+
+This project reads encrypted or unencrypted Maybank statement PDFs and converts
+their transaction rows into structured JSON.
+
+Primary use cases:
+
+- Parse account statement transactions into Python objects.
+- Serialize extracted data to pretty JSON text.
+- Retrieve account metadata (account number and statement date) together with
+  transactions.
+
+## Features
+
+- PDF parsing with password support through `pdfplumber`.
+- Stable transaction schema: `date`, `desc`, `trans`, `bal`.
+- Two output modes:
+  - Transactions only (`json()` / `data()`)
+  - Metadata + transactions (`jsonV2()` / `data_v2()`)
+- Built-in pretty JSON serialization (`dumps()` and `dumps_v2()`).
+- Statement amount parsing with trailing sign notation:
+  - `123.45-` becomes `-123.45`
+  - `123.45+` becomes `123.45`
+- Consistent date format: `dd/mm/yy`.
+
 ## Install
 
 Requires Python 3.8 or newer.
@@ -33,6 +73,14 @@ with open("statement.pdf", "rb") as f:
 
     # Full output with account metadata
     print(extractor.dumps_v2())
+```
+
+If your PDF is not password-protected, pass `None` or omit the password:
+
+```python
+with open("statement.pdf", "rb") as f:
+    extractor = MaybankPdf2Json(f)
+    print(extractor.data())
 ```
 
 ## API
@@ -100,6 +148,43 @@ Full output from `dumps_v2()`:
 }
 ```
 
+## Architecture
+
+Processing pipeline:
+
+```mermaid
+graph LR
+  A[PDF Buffer] --> B[read]
+  B --> C[get_filtered_data]
+  C --> D[get_mapped_data]
+  B --> E[extract_account_and_date]
+  D --> F[json]
+  D --> G[jsonV2 transactions]
+  E --> H[jsonV2 metadata]
+```
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for internals and parser
+conventions.
+
+## Project Structure
+
+```text
+maybankpdf2json/
+├── maybankpdf2json/
+│   ├── __init__.py
+│   ├── extractor.py
+│   └── utils.py
+├── tests/
+│   ├── test_extractor.py
+│   └── test.pdf
+├── docs/
+│   └── ARCHITECTURE.md
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── pyproject.toml
+└── setup.py
+```
+
 ## Development
 
 Install project dependencies:
@@ -119,6 +204,8 @@ Alternative test command:
 ```bash
 pytest tests/
 ```
+
+Current tests are fixture-based and rely on `tests/test.pdf`.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development workflow and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for parser internals.
 
@@ -157,6 +244,17 @@ make release
 ```
 
 This builds and uploads to PyPI using Twine. Run only with valid release credentials.
+
+## Contributing
+
+Contributions are welcome.
+
+- Keep changes focused and small.
+- Preserve the public import: `from maybankpdf2json import MaybankPdf2Json`.
+- Add user-facing changes to `[Unreleased]` in `CHANGELOG.md`.
+- Run tests before opening a pull request.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full checklist.
 
 ## License
 

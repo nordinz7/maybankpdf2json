@@ -8,7 +8,12 @@ for release version numbers.
 
 ## [Unreleased]
 
-## [v1.53] - 2026-04-04
+### Documentation
+
+- Restructured README with table of contents, feature summary, architecture
+  pipeline diagram, project structure, and updated contribution guidance.
+
+## [0.1.53] - 2026-04-04
 
 ### Added
 
@@ -37,4 +42,4 @@ for release version numbers.
 ### Notes
 
 - Changelog content generated from all commits since `2026-01-01`.
-- Release is documented as `v1.53` and is pending publication to PyPI.
+- Release is documented as `0.1.53` and is pending publication to PyPI.

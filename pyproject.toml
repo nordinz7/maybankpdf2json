@@ -12,11 +12,25 @@ readme = "README.md"
 urls = { "Homepage" = "https://github.com/nordinz7/maybankpdf2json" }
 keywords = [
     "maybank",
+    "maybank2u",
+    "m2u",
     "pdf",
+    "pdf parser",
+    "pdf extractor",
     "JSON",
-    "account statements",
+    "account statement",
+    "bank statement",
+    "statement parser",
+    "statement converter",
+    "transaction parser",
     "Email delivery statement",
     "Malayan Banking",
+    "malaysia",
+    "finance",
+    "personal finance",
+    "banking",
+    "fintech",
+    "data extraction",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",

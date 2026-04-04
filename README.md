@@ -65,4 +65,15 @@ Example output:
 
 Date format is `dd/mm/yy`.
 
+## Quick Full-Data Test (tests folder)
+
+1. Put your statement PDF at `tests/test.pdf`.
+2. Run this from the project root:
+
+```bash
+TEST_PDF_PASSWORD='passwordOfTest.pdf' python3 -c "import json, os; from maybankpdf2json.extractor import MaybankPdf2Json; f=open('tests/test.pdf','rb'); print(json.dumps(MaybankPdf2Json(f, os.environ.get('TEST_PDF_PASSWORD','')).json(), indent=2)); f.close()"
+```
+
+If your PDF has no password, use `TEST_PDF_PASSWORD=''`.
+
 MIT License.

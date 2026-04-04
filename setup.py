@@ -7,7 +7,7 @@ README = Path(__file__).with_name("README.md").read_text(encoding="utf-8")
 
 setup(
     name="maybankpdf2json",
-    version="0.2.0",
+    version="0.2.1",
     author="Nordin",
     author_email="vipnordin@gmail.com",
     description="A package for extracting JSON data from Maybank PDF account statements",

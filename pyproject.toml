@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "maybankpdf2json"
-version = "0.2.0"
+version = "0.2.1"
 description = "A package for extracting JSON data from Maybank PDF account statements"
 authors = [{ name = "Nordin", email = "vipnordin@gmail.com" }]
 license = { file = "LICENSE" }

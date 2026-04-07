@@ -8,6 +8,7 @@ from maybankpdf2json.utils import (
     get_filtered_data,
     get_mapped_data,
     get_statement_date,
+    get_transactions,
 )
 import os
 from dotenv import load_dotenv
@@ -138,6 +139,19 @@ class TestParserEdgeCases(unittest.TestCase):
         self.assertEqual(get_account_number(lines), "162021-851156")
         self.assertEqual(get_statement_date(lines), "30/09/24")
 
+    def test_get_transactions_helpers(self):
+        lines = [
+            "Header",
+            "BEGINNING BALANCE 1,000.00+",
+            "01/09/24 PAYMENT TO MERCHANT 10.00- 990.00+",
+            "TOTAL DEBIT 10.00",
+        ]
+
+        transactions = get_transactions(lines)
+
+        self.assertEqual(len(transactions), 2)
+        self.assertEqual(transactions[1]["desc"], "PAYMENT TO MERCHANT")
+
     def test_extractor_metadata_accessor_methods(self):
         fake_pdf = b"%PDF-1.4 fake content"
         lines = ["Account No: 162021-851156", "Statement Date: 30/09/24"]
@@ -147,6 +161,20 @@ class TestParserEdgeCases(unittest.TestCase):
 
             self.assertEqual(extractor.get_account_number(), "162021-851156")
             self.assertEqual(extractor.get_statement_date(), "30/09/24")
+
+    def test_extractor_transaction_accessor_methods(self):
+        fake_pdf = b"%PDF-1.4 fake content"
+        lines = [
+            "Header",
+            "BEGINNING BALANCE 1,000.00+",
+            "01/09/24 PAYMENT TO MERCHANT 10.00- 990.00+",
+            "TOTAL DEBIT 10.00",
+        ]
+
+        with patch("maybankpdf2json.extractor.read", return_value=lines):
+            extractor = MaybankPdf2Json(io.BytesIO(fake_pdf), None)
+
+            self.assertEqual(len(extractor.get_transactions()), 2)
 
 
 if __name__ == "__main__":

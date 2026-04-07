@@ -2,10 +2,12 @@ import io
 from typing import List, Optional
 
 from .utils import (
+    Output,
     OutputV2,
     convert_to_jsonV2,
     get_account_number,
     get_statement_date,
+    get_transactions,
     read,
 )
 
@@ -53,6 +55,12 @@ class MaybankPdf2Json:
         Returns statement date from the statement without parsing transactions.
         """
         return get_statement_date(self._get_all_lines())
+
+    def get_transactions(self) -> List[Output]:
+        """
+        Returns parsed transaction rows from the statement.
+        """
+        return get_transactions(self._get_all_lines())
 
     def json(self) -> OutputV2:
         """

@@ -279,6 +279,19 @@ def extract_account_and_date(lines: List[str]) -> dict:
     }
 
 
+def get_transactions(lines: List[str]) -> List[Output]:
+    """
+    Returns mapped transaction rows from raw statement lines.
+
+    Args:
+        lines (List[str]): Raw statement lines.
+    Returns:
+        List[Output]: Parsed transactions.
+    """
+    filtered = get_filtered_data(lines)
+    return get_mapped_data(filtered)
+
+
 def convert_to_jsonV2(s: Any) -> OutputV2:
     """
     Converts a PDF statement
@@ -293,8 +306,7 @@ def convert_to_jsonV2(s: Any) -> OutputV2:
         }
     """
     all_lines = read(s.buffer, pwd=getattr(s, "pwd", None))
-    d = get_filtered_data(all_lines)
-    transactions = get_mapped_data(d)
+    transactions = get_transactions(all_lines)
     output = extract_account_and_date(all_lines)
     return {
         "account_number": output["account_number"],

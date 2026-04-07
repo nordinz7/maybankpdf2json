@@ -1,7 +1,13 @@
 import io
-from typing import Optional
+from typing import List, Optional
 
-from .utils import OutputV2, convert_to_jsonV2
+from .utils import (
+    OutputV2,
+    convert_to_jsonV2,
+    get_account_number,
+    get_statement_date,
+    read,
+)
 
 
 class MaybankPdf2Json:
@@ -26,6 +32,27 @@ class MaybankPdf2Json:
         self.buffer = io.BytesIO(buffer.read())
         buffer.seek(original_position)
         self.pwd: Optional[str] = pwd
+        self._lines_cache: Optional[List[str]] = None
+
+    def _get_all_lines(self) -> List[str]:
+        """
+        Lazily reads statement lines and caches them for repeated metadata access.
+        """
+        if self._lines_cache is None:
+            self._lines_cache = read(self.buffer, pwd=self.pwd)
+        return self._lines_cache
+
+    def get_account_number(self) -> Optional[str]:
+        """
+        Returns account number from the statement without parsing transactions.
+        """
+        return get_account_number(self._get_all_lines())
+
+    def get_statement_date(self) -> Optional[str]:
+        """
+        Returns statement date from the statement without parsing transactions.
+        """
+        return get_statement_date(self._get_all_lines())
 
     def json(self) -> OutputV2:
         """

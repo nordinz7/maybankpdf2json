@@ -1,7 +1,14 @@
 import unittest
+import io
 from datetime import datetime
+from unittest.mock import patch
 from maybankpdf2json.extractor import MaybankPdf2Json
-from maybankpdf2json.utils import get_filtered_data, get_mapped_data
+from maybankpdf2json.utils import (
+    get_account_number,
+    get_filtered_data,
+    get_mapped_data,
+    get_statement_date,
+)
 import os
 from dotenv import load_dotenv
 
@@ -120,6 +127,26 @@ class TestParserEdgeCases(unittest.TestCase):
         self.assertNotIn("This note block should be removed", filtered)
         self.assertNotIn("TOTAL CREDIT 0.00", filtered)
         self.assertNotIn("TOTAL DEBIT 10.00", filtered)
+
+    def test_get_account_number_and_statement_date_helpers(self):
+        lines = [
+            "Random Header",
+            "Account No: 162021-851156",
+            "Statement Date: 30/09/24",
+        ]
+
+        self.assertEqual(get_account_number(lines), "162021-851156")
+        self.assertEqual(get_statement_date(lines), "30/09/24")
+
+    def test_extractor_metadata_accessor_methods(self):
+        fake_pdf = b"%PDF-1.4 fake content"
+        lines = ["Account No: 162021-851156", "Statement Date: 30/09/24"]
+
+        with patch("maybankpdf2json.extractor.read", return_value=lines):
+            extractor = MaybankPdf2Json(io.BytesIO(fake_pdf), None)
+
+            self.assertEqual(extractor.get_account_number(), "162021-851156")
+            self.assertEqual(extractor.get_statement_date(), "30/09/24")
 
 
 if __name__ == "__main__":

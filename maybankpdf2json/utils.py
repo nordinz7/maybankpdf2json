@@ -229,32 +229,54 @@ class OutputV2(TypedDict):
     transactions: List[Output]
 
 
+def get_account_number(lines: List[str]) -> Optional[str]:
+    """
+    Returns the first account number found in statement lines.
+
+    Args:
+        lines (List[str]): Raw statement lines.
+    Returns:
+        Optional[str]: Account number in NNNNNN-NNNNNN format, if found.
+    """
+    for line in lines:
+        account_match = ACCOUNT_NUMBER_PATTERN.search(line)
+        if account_match:
+            return account_match.group()
+    return None
+
+
+def get_statement_date(lines: List[str]) -> Optional[str]:
+    """
+    Returns the first valid statement date found in statement lines.
+
+    Args:
+        lines (List[str]): Raw statement lines.
+    Returns:
+        Optional[str]: Date string in dd/mm/yy format, if found.
+    """
+    for line in lines:
+        date_match = STATEMENT_DATE_PATTERN.search(line)
+        if not date_match:
+            continue
+
+        raw_date = date_match.group()
+        try:
+            dt = datetime.strptime(raw_date, DATE_FORMAT)
+            return dt.strftime(DATE_FORMAT)
+        except ValueError:
+            continue
+    return None
+
+
 def extract_account_and_date(lines: List[str]) -> dict:
     """
     Extracts the account number and statement date from the provided lines.
     Returns a dict with string or None values.
     """
-    account_number = None
-    statement_date = None
-
-    for line in lines:
-        # Look for account number pattern (e.g., 162021-851156)
-        account_match = ACCOUNT_NUMBER_PATTERN.search(line)
-        if account_match:
-            account_number = account_match.group()
-
-        # Look for date pattern (e.g., 30/09/24)
-        date_match = STATEMENT_DATE_PATTERN.search(line)
-        if date_match:
-            raw_date = date_match.group()
-            try:
-                # Always return as string in 'dd/mm/yy' format
-                dt = datetime.strptime(raw_date, DATE_FORMAT)
-                statement_date = dt.strftime(DATE_FORMAT)
-            except ValueError:
-                pass
-
-    return {"account_number": account_number, "statement_date": statement_date}
+    return {
+        "account_number": get_account_number(lines),
+        "statement_date": get_statement_date(lines),
+    }
 
 
 def convert_to_jsonV2(s: Any) -> OutputV2:
